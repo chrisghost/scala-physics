@@ -22,6 +22,7 @@ import models.physics._
 import models.physics.utils._
 
 case class Join()
+case class Command(body: Body)
 case class Connected(enumerator:Enumerator[JsValue])
 case class CannotConnect(msg: String)
 
@@ -32,14 +33,15 @@ class Viewer(world: ActorRef) extends Actor {
 
   def receive = {
     case j:Join => {
-      send("hello")
-      world ! NewBody( BoxBody( V2(0, 0), V2(0, 0), V2(0, 0), V2(1.0f, 1.0f), 1.0f, false, "d1") )
       sender ! Connected(enum)
     }
     case Tick => {
       (world ? GetBodies).mapTo[Map[String, Body]].map { m =>
         send(Json.toJson(m))
       }
+    }
+    case m:Command => {
+      world ! NewBody(m.body)
     }
   }
   def send(msg: String) {

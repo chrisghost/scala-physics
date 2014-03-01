@@ -16,8 +16,8 @@ import play.api.libs.concurrent.Execution.Implicits._
 
 import actors._
 import actors.physics._
+import models.physics._
 
-case class Message(msg: String)
 case class Quit()
 
 object Room {
@@ -26,15 +26,16 @@ object Room {
   val viewer = Akka.system.actorOf(Props(new Viewer(world)))
   implicit val timeout = Timeout(1 second)
 
-  val viewTick = Akka.system.scheduler.schedule( 0 milliseconds, 16 milliseconds, viewer, Tick)
+  val viewTick = Akka.system.scheduler.schedule( 0 milliseconds, 500 milliseconds, viewer, Tick)
   val worldTick = Akka.system.scheduler.schedule( 0 milliseconds, 16 milliseconds, world, Tick)
 
   def join : scala.concurrent.Future[(Iteratee[JsValue,_],Enumerator[JsValue])] = {
     (viewer ? Join()).map {
       case Connected(enumerator) => {
+
         println(s"incoming connection")
         val iteratee = Iteratee.foreach[JsValue] { event =>
-          viewer ! Message((event \ "msg").as[String])
+          viewer ! Command((event \ "body").as[BoxBody])
         }.map { _ =>
           viewer ! Quit()
         }

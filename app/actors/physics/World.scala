@@ -82,6 +82,6 @@ class World extends Actor {
     }
   }
 
-  def genId = scala.util.Random.nextString(7)
+  def genId = scala.util.Random.nextInt(10000).toString
 }
 

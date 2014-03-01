@@ -1,8 +1,8 @@
 $(function() {
     var username = "a"
     var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket
-    var chatSocket = new WS(wsUrl)
+    window.socket = new WS(wsUrl)
 
-    chatSocket.onmessage = serverTick
+    window.socket.onmessage = serverTick
 
 })
