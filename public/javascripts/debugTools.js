@@ -6,6 +6,7 @@ var createBox = function(x, y) {
       acceleration:{x:0.0,y:0},
       size:{x:1.0,y:1.0},
       density:1.0,
+      restitution:0.5,
       static:false,
       id:""
     }
@@ -19,6 +20,7 @@ var createBody = function(pos, size, static) {
       acceleration:{x:0.0,y:0},
       size: size,
       density:1.0,
+      restitution:0.5,
       static: static,
       id:""
     }

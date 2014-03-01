@@ -9,9 +9,10 @@ case class BoxBody(
   , var acceleration: V2
   , size: V2
   , override val density: Float
+  , override val restitution: Float
   , override val static: Boolean
   , override val id: String = ""
-) extends Body(density, static, id) {
+) extends Body(density, restitution, static, id) {
 
   override def mass = size.x * size.y * density
   def topRight = position + size/2

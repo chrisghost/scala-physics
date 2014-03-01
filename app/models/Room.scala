@@ -26,7 +26,7 @@ object Room {
   val viewer = Akka.system.actorOf(Props(new Viewer(world)))
   implicit val timeout = Timeout(1 second)
 
-  val viewTick = Akka.system.scheduler.schedule( 0 milliseconds, 500 milliseconds, viewer, Tick)
+  val viewTick = Akka.system.scheduler.schedule( 0 milliseconds, 32 milliseconds, viewer, Tick)
   val worldTick = Akka.system.scheduler.schedule( 0 milliseconds, 16 milliseconds, world, Tick)
 
   def join : scala.concurrent.Future[(Iteratee[JsValue,_],Enumerator[JsValue])] = {

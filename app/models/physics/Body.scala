@@ -7,6 +7,7 @@ import play.api.libs.functional.syntax._
 
 abstract class Body(
     val density: Float
+  , val restitution: Float
   , val static: Boolean
   , val id: String = ""
 ) {
