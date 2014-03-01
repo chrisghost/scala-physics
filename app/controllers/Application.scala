@@ -12,8 +12,8 @@ object Application extends Controller {
     Ok(views.html.index("Your new application is ready."))
   }
 
-  def view(username: String) = WebSocket.async[JsValue] { request =>
-    Room.join(username)
+  def view = WebSocket.async[JsValue] { request =>
+    Room.join
   }
 
 }

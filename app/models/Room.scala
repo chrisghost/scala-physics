@@ -17,36 +17,29 @@ import play.api.libs.concurrent.Execution.Implicits._
 import actors._
 import actors.physics._
 
-case class Message(username: String, msg: String)
-case class Quit(username: String)
+case class Message(msg: String)
+case class Quit()
 
 object Room {
 
-  val viewer = Akka.system.actorOf(Props[Viewer])
   val world = Akka.system.actorOf(Props[World])
+  val viewer = Akka.system.actorOf(Props(new Viewer(world)))
   implicit val timeout = Timeout(1 second)
 
-  val viewTick = Akka.system.scheduler.schedule( 0 milliseconds, 500 milliseconds, viewer, Tick)
+  val viewTick = Akka.system.scheduler.schedule( 0 milliseconds, 16 milliseconds, viewer, Tick)
   val worldTick = Akka.system.scheduler.schedule( 0 milliseconds, 16 milliseconds, world, Tick)
 
-  def join(username:String):scala.concurrent.Future[(Iteratee[JsValue,_],Enumerator[JsValue])] = {
-    (viewer ? Join(username)).map {
-      case Connected(enumerator) =>
-        println(s"incoming connection from ${username}")
-        // Create an Iteratee to consume the feed
+  def join : scala.concurrent.Future[(Iteratee[JsValue,_],Enumerator[JsValue])] = {
+    (viewer ? Join()).map {
+      case Connected(enumerator) => {
+        println(s"incoming connection")
         val iteratee = Iteratee.foreach[JsValue] { event =>
-          viewer ! Message(username, (event \ "msg").as[String])
+          viewer ! Message((event \ "msg").as[String])
         }.map { _ =>
-          viewer ! Quit(username)
+          viewer ! Quit()
         }
         (iteratee,enumerator)
-      case CannotConnect(error) =>
-        // Connection error
-        // A finished Iteratee sending EOF
-        val iteratee = Done[JsValue,Unit]((),Input.EOF)
-        // Send an error and close the socket
-        val enumerator = Enumerator[JsValue](JsObject(Seq("error" -> JsString(error)))).andThen(Enumerator.enumInput(Input.EOF))
-        (iteratee,enumerator)
+      }
     }
   }
 }

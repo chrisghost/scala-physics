@@ -16,27 +16,30 @@ import actors.physics._
 
 import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
+import play.api.libs.json._
 
-case class Join(username: String)
+import models.physics._
+import models.physics.utils._
+
+case class Join()
 case class Connected(enumerator:Enumerator[JsValue])
 case class CannotConnect(msg: String)
 
-class Viewer extends Actor {
+class Viewer(world: ActorRef) extends Actor {
   var members = Set.empty[String]
   val (enum, channel) = Concurrent.broadcast[JsValue]
+  implicit val defaultTimeout = Timeout(1 second)
 
   def receive = {
     case j:Join => {
-      if(members.contains(j.username)) {
-        sender ! CannotConnect("This username is already used")
-      } else {
-        members = members + j.username
-        send("hello")
-        sender ! Connected(enum)
-      }
+      send("hello")
+      world ! NewBody( BoxBody( V2(0, 0), V2(0, 0), V2(0, 0), V2(1.0f, 1.0f), 1.0f, false, "d1") )
+      sender ! Connected(enum)
     }
     case Tick => {
-      send("tickB")
+      (world ? GetBodies).mapTo[Map[String, Body]].map { m =>
+        send(Json.toJson(m))
+      }
     }
   }
   def send(msg: String) {

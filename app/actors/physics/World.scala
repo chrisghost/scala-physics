@@ -11,10 +11,11 @@ case class NewBody(body: Body)
 case object GetBodies
 case class FakeTick(d: Long)
 case class Tick()
+case class Bodies()
 
 class World extends Actor {
   val gravity = V2(0, -9.81f)
-  val bodies : scala.collection.mutable.Map[String, Body] =  scala.collection.mutable.Map.empty
+  val bodies : scala.collection.mutable.Map[String,Body] =  scala.collection.mutable.Map.empty
   var lastTick: Long = scala.compat.Platform.currentTime
   def receive = {
     case t:FakeTick => {
@@ -34,12 +35,13 @@ class World extends Actor {
       }
     }
     case GetBodies => {
+      //println(bodies.values)
       sender ! bodies.toMap
     }
   }
 
   def step(delta: Long) = {
-    println("world step", delta)
+    //println("step", delta)
 
     val d = delta/1000f // Use seconds for calculation inside the physics engine
 
@@ -47,7 +49,6 @@ class World extends Actor {
 
     eulerIntegration(d)
 
-    println(collidingObjects)
   }
 
   def eulerIntegration(d: Float) {

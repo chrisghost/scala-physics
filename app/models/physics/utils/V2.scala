@@ -1,5 +1,7 @@
 package models.physics.utils
 
+import play.api.libs.json._
+
 case class V2(x: Float, y: Float) {
   def +(v: V2) = V2(v.x+x, v.y+y)
   def -(v: V2) = V2(x-v.x, y-v.y)
@@ -9,4 +11,7 @@ case class V2(x: Float, y: Float) {
 }
 
 object V2 {
+
+  implicit val v2Format = Json.format[V2]
+
 }

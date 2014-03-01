@@ -1,6 +1,7 @@
 package models.physics
 
 import models.physics.utils._
+import play.api.libs.json._
 
 case class BoxBody(
     var position: V2
@@ -20,5 +21,7 @@ case class BoxBody(
 }
 
 object BoxBody {
+
+  implicit val boxBodyFormat = Json.format[BoxBody]
 
 }
