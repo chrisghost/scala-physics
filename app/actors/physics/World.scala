@@ -46,6 +46,8 @@ class World extends Actor {
     applyGravity(d)
 
     eulerIntegration(d)
+
+    println(collidingObjects)
   }
 
   def eulerIntegration(d: Float) {
@@ -58,6 +60,24 @@ class World extends Actor {
   def applyGravity(d: Float) {
     bodies.values.filterNot(_.static).foreach { b =>
       b.acceleration = b.acceleration + (gravity * b.mass * d)
+    }
+  }
+
+  def collidingObjects = bodies.values.map { a =>
+    (a.id, bodies.values.filter(b =>
+      (b.id != a.id && collide(a, b))
+    ).map(_.id))
+  }
+
+  def collide(a: Body, b: Body) = {
+    (a, b) match {
+      case (a:BoxBody, b:BoxBody) => {
+        !(a.topRight.x < b.topLeft.x      ||//LEFT
+          a.bottomRight.y > b.topRight.y  ||//UP
+          a.topLeft.x > b.topRight.x      ||//RIGHT
+          a.topLeft.y < b.bottomLeft.y)     //DOWN
+      }
+      case _ => false
     }
   }
 

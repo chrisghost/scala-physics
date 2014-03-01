@@ -24,8 +24,8 @@ import reflect.ClassTag
 
 class WorldSpec extends Specification {
 
-  val box = BoxBody( V2(0, 0), V2(1, 1), V2(1, 1), 1.0f, 1.0f, 1.0f, false, "d1")
-  val bigBox = BoxBody( V2(0, 0), V2(1, 1), V2(1, 1), 10.0f, 10.0f, 1.0f, false, "d2")
+  val box = BoxBody( V2(0, 0), V2(1, 1), V2(1, 1), V2(1.0f, 1.0f), 1.0f, false, "d1")
+  val bigBox = BoxBody( V2(0, 0), V2(1, 1), V2(1, 1), V2(10.0f, 10.0f), 1.0f, false, "d2")
 
   "World" should {
     "create bodies" in running(FakeApplication()) {
