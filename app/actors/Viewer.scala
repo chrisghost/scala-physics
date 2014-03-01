@@ -12,13 +12,14 @@ import play.api.libs.concurrent._
 import akka.util.Timeout
 import akka.pattern.ask
 
+import actors.physics._
+
 import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
 
 case class Join(username: String)
 case class Connected(enumerator:Enumerator[JsValue])
 case class CannotConnect(msg: String)
-case class Tick()
 
 class Viewer extends Actor {
   var members = Set.empty[String]

@@ -1,9 +1,7 @@
 package models
 
-
 import akka.actor._
 import scala.concurrent.duration._
-import scala.language.postfixOps
 
 import play.api._
 import play.api.libs.json._
@@ -17,6 +15,7 @@ import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
 
 import actors._
+import actors.physics._
 
 case class Message(username: String, msg: String)
 case class Quit(username: String)
@@ -24,14 +23,11 @@ case class Quit(username: String)
 object Room {
 
   val viewer = Akka.system.actorOf(Props[Viewer])
+  val world = Akka.system.actorOf(Props[World])
   implicit val timeout = Timeout(1 second)
 
-  val cancellable =
-    Akka.system.scheduler.schedule(
-      0 milliseconds,
-      500 milliseconds,
-      viewer,
-      Tick)
+  val viewTick = Akka.system.scheduler.schedule( 0 milliseconds, 500 milliseconds, viewer, Tick)
+  val worldTick = Akka.system.scheduler.schedule( 0 milliseconds, 16 milliseconds, world, Tick)
 
   def join(username:String):scala.concurrent.Future[(Iteratee[JsValue,_],Enumerator[JsValue])] = {
     (viewer ? Join(username)).map {
