@@ -9,13 +9,17 @@ import models.physics.utils._
 
 case class NewBody(body: Body)
 case object GetBodies
+case class FakeTick(d: Long)
 case class Tick()
 
 class World extends Actor {
-  val gravity : Float = 9.81f
+  val gravity = V2(0, -9.81f)
   val bodies : scala.collection.mutable.Map[String, Body] =  scala.collection.mutable.Map.empty
   var lastTick: Long = scala.compat.Platform.currentTime
   def receive = {
+    case t:FakeTick => {
+      step(t.d)
+    }
     case Tick => {
       val curTime = scala.compat.Platform.currentTime
       val delta = curTime - lastTick
@@ -33,13 +37,24 @@ class World extends Actor {
 
   def step(delta: Long) = {
     println("world step", delta)
-    eulerIntegration(delta)
+
+    val d = delta/1000f // Use seconds for calculation inside the physics engine
+
+    applyGravity(d)
+
+    eulerIntegration(d)
   }
 
-  def eulerIntegration(delta: Long) {
+  def eulerIntegration(d: Float) {
     bodies.values.filterNot(_.static).foreach { b =>
-      b.position = b.position + (b.velocity * delta)
-      b.velocity = b.velocity + (b.acceleration * delta)
+      b.position = b.position + (b.velocity * d)
+      b.velocity = b.velocity + (b.acceleration * d)
+    }
+  }
+
+  def applyGravity(d: Float) {
+    bodies.values.filterNot(_.static).foreach { b =>
+      b.acceleration = b.acceleration + (gravity * d)
     }
   }
 

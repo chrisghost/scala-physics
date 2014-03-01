@@ -41,13 +41,24 @@ class WorldSpec extends Specification {
       val world = Akka.system.actorOf(Props[World])
 
       world ! NewBody(box.copy(velocity = V2(100, 100)))
-      world ! Tick // First tick is 0
-      world ! Tick
+      world ! FakeTick(10)
 
       val lst = Await.result((world ? GetBodies).mapTo[Map[String, Body]], Duration.Inf)
 
       lst.head._2.position.x !== box.position.x
       lst.head._2.position.y !== box.position.y
+    }
+    "fall down because of gravity" in running(FakeApplication()) {
+      implicit val ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext
+      val world = Akka.system.actorOf(Props[World])
+
+      world ! NewBody(box.copy(velocity = V2(0, 0), acceleration= V2(0, 0)))
+      world ! FakeTick(10)
+
+      val lst = Await.result((world ? GetBodies).mapTo[Map[String, Body]], Duration.Inf)
+
+      println(lst.head._2.position.y, box.position.y)
+      lst.head._2.position.y < box.position.y
     }
   }
 }
