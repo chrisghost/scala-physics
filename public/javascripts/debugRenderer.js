@@ -37,8 +37,8 @@ $(function () {
     })
 
     createBody(
-        {x: 200/METER_TO_PIXEL, y: -200/METER_TO_PIXEL }
-      , {x: 10, y: 2 }
+        {x: 200/METER_TO_PIXEL, y: -600/METER_TO_PIXEL }
+      , {x: 100, y: 10 }
       , true
     )
   }, 100)

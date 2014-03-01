@@ -30,7 +30,12 @@ class World extends Actor {
 
     case n:NewBody => {
       n.body.id match {
-        case "" => bodies(genId) = n.body
+        case "" => {
+          val id = genId
+          n.body match {
+            case bb: BoxBody => bodies(id) = bb.copy(id=id)
+          }
+        }
         case _ => bodies(n.body.id) = n.body
       }
     }
@@ -49,6 +54,9 @@ class World extends Actor {
 
     eulerIntegration(d)
 
+    val cc = collidingObjects
+    if(cc.size > 0)
+      println(cc)
   }
 
   def eulerIntegration(d: Float) {
@@ -64,21 +72,29 @@ class World extends Actor {
     }
   }
 
-  def collidingObjects = bodies.values.map { a =>
-    (a.id, bodies.values.filter(b =>
-      (b.id != a.id && collide(a, b))
-    ).map(_.id))
+  def resolveCollision(a: Body, b: Body) = {
+
   }
+
+  def collidingObjects = bodies.values.map { a =>
+    (
+      a,
+      bodies.values.filter(_.id != a.id)
+      .filter(b => collide(a, b))
+    )
+  }.filterNot(_._2 == Nil)
 
   def collide(a: Body, b: Body) = {
     (a, b) match {
       case (a:BoxBody, b:BoxBody) => {
-        !(a.topRight.x < b.topLeft.x      ||//LEFT
-          a.bottomRight.y > b.topRight.y  ||//UP
-          a.topLeft.x > b.topRight.x      ||//RIGHT
-          a.topLeft.y < b.bottomLeft.y)     //DOWN
+        !(a.topLeft.x > b.topRight.x      ||//LEFT
+          a.topLeft.y < b.bottomLeft.y    ||//UP
+          a.topRight.x < b.topLeft.x      ||//RIGHT
+          a.bottomLeft.y > b.topLeft.y)     //DOWN
       }
-      case _ => false
+      case _ => {
+        false
+      }
     }
   }
 
