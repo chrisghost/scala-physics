@@ -24,7 +24,8 @@ import reflect.ClassTag
 
 class WorldSpec extends Specification {
 
-  val box = BoxBody( V2(0, 0), V2(1, 1), V2(1, 1), 1.0f, 1.0f, 1.0f, false)
+  val box = BoxBody( V2(0, 0), V2(1, 1), V2(1, 1), 1.0f, 1.0f, 1.0f, false, "d1")
+  val bigBox = BoxBody( V2(0, 0), V2(1, 1), V2(1, 1), 10.0f, 10.0f, 1.0f, false, "d2")
 
   "World" should {
     "create bodies" in running(FakeApplication()) {
@@ -53,12 +54,16 @@ class WorldSpec extends Specification {
       val world = Akka.system.actorOf(Props[World])
 
       world ! NewBody(box.copy(velocity = V2(0, 0), acceleration= V2(0, 0)))
+      world ! NewBody(bigBox.copy(velocity = V2(0, 0), acceleration= V2(0, 0)))
+      world ! FakeTick(10)
       world ! FakeTick(10)
 
       val lst = Await.result((world ? GetBodies).mapTo[Map[String, Body]], Duration.Inf)
 
-      println(lst.head._2.position.y, box.position.y)
-      lst.head._2.position.y < box.position.y
+      lst("d1").position.y must beLessThan(box.position.y)
+      lst("d2").position.y must beLessThan(bigBox.position.y)
+
+      lst("d2").position.y must beLessThan(lst("d1").position.y) // d2 is bigger (so heavier) than d1
     }
   }
 }

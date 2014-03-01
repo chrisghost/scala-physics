@@ -28,7 +28,10 @@ class World extends Actor {
     }
 
     case n:NewBody => {
-      bodies(genId) = n.body
+      n.body.id match {
+        case "" => bodies(genId) = n.body
+        case _ => bodies(n.body.id) = n.body
+      }
     }
     case GetBodies => {
       sender ! bodies.toMap
@@ -54,7 +57,7 @@ class World extends Actor {
 
   def applyGravity(d: Float) {
     bodies.values.filterNot(_.static).foreach { b =>
-      b.acceleration = b.acceleration + (gravity * d)
+      b.acceleration = b.acceleration + (gravity * b.mass * d)
     }
   }
 

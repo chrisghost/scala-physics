@@ -10,7 +10,11 @@ case class BoxBody(
   , height: Float
   , override val density: Float
   , override val static: Boolean
-) extends Body(density, static)
+  , override val id: String = ""
+) extends Body(density, static, id) {
+
+  override def mass = width * height * density
+}
 
 object BoxBody {
 
