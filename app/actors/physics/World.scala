@@ -17,15 +17,16 @@ class World extends Actor {
   val gravity = V2(0, -9.81f)
   val bodies : scala.collection.mutable.Map[String,Body] =  scala.collection.mutable.Map.empty
   var lastTick: Long = scala.compat.Platform.currentTime
+  var lastDelta: Double = 0.0
   def receive = {
     case t:FakeTick => {
       step(t.d)
     }
     case Tick => {
       val curTime = scala.compat.Platform.currentTime
-      val delta = curTime - lastTick
+      lastDelta = (curTime - lastTick)/1000f // Use seconds for calculation inside the physics engine
       lastTick = curTime
-      step(delta)
+      step(lastDelta)
     }
 
     case n:NewBody => {
@@ -45,10 +46,8 @@ class World extends Actor {
     }
   }
 
-  def step(delta: Long) = {
+  def step(d: Double) = {
     //println("step", delta)
-
-    val d = delta/1000f // Use seconds for calculation inside the physics engine
 
     applyGravity(d)
 
@@ -57,40 +56,66 @@ class World extends Actor {
     val cc = collidingObjects
     if(cc.size > 0) {
       cc.map{ e =>
-        (e._1, e._2.head) match {
-          case (a:BoxBody, b:BoxBody) =>
-            minimumTranslation(a, b)
-              .map { r =>
-                println(r)
-                resolveCollision(a, b, r)
-              }
+        e._2.toList.sortWith((e1, e2) => (!e1.static)).map { b =>
+          (e._1, b) match {
+            case (a:BoxBody, bb:BoxBody) => {
+              minimumTranslation(a, bb)
+                .map { r =>
+                  resolveCollision(a, bb, r)
+                }
+                //.map { r => positionalCorrection(a, b, r) }
+            }
+          }
         }
       }
+
     }
   }
 
-  def eulerIntegration(d: Float) {
+  def eulerIntegration(d: Double) {
     bodies.values.filterNot(_.static).foreach { b =>
       b.position = b.position + (b.velocity * d)
       b.velocity = b.velocity + (b.acceleration * d)
     }
   }
 
-  def applyGravity(d: Float) {
+  def applyGravity(d: Double) {
     bodies.values.filterNot(_.static).foreach { b =>
       b.acceleration = b.acceleration + (gravity * b.mass * d)
     }
   }
 
   def resolveCollision(a: Body, b: Body, mtd: V2) = {
-    a.position = a.position + mtd
-    val rest = -(1-math.min(a.restitution, b.restitution))
-    if(mtd.x == 0) {
-      if(!(a.velocity.y<0 && mtd.y<0))
-        a.velocity = a.velocity.copy(y= rest*a.velocity.y)
-    } else {
-      if(!(a.velocity.x<0 && mtd.x<0))
-        a.velocity = a.velocity.copy(x= rest*a.velocity.x)
+
+    val ima = 1/a.mass
+    val imb = 1/b.mass
+    val im  = ima + imb
+
+    //println(a.position, " = to => ", a.position + mtd * (ima / im))
+    a.position = a.position + mtd * (ima / im)
+    //if(!b.static) b.position = b.position - mtd * (imb / im)
+
+    val n = mtd.norm
+    val v = (a.velocity - b.velocity)
+    val vn = v.dot(n)
+
+    if(vn < 0.0) {
+      val rest = math.min(a.restitution, b.restitution)
+
+      val j = -(1.0f + rest) * vn / (im)
+
+      if(vn < gravity.y*ima*lastDelta*1000) {
+        a.velocity = a.velocity + n * (j * ima)
+        a.acceleration = a.acceleration.copy(y=a.acceleration.y/2)
+      } else {
+        if(n.x == 0) {
+          a.velocity = a.velocity.copy(y=0)
+        a.acceleration = a.acceleration.copy(y=0)
+        } else {
+          a.velocity = a.velocity.copy(x=0)
+          a.acceleration = a.acceleration.copy(x=0)
+        }
+      }
     }
   }
 

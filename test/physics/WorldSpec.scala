@@ -24,8 +24,8 @@ import reflect.ClassTag
 
 class WorldSpec extends Specification {
 
-  val box = BoxBody( V2(0, 0), V2(1, 1), V2(1, 1), V2(1.0f, 1.0f), 1.0f, false, "d1")
-  val bigBox = BoxBody( V2(0, 0), V2(1, 1), V2(1, 1), V2(10.0f, 10.0f), 1.0f, false, "d2")
+  val box = BoxBody( V2(0, 0), V2(1, 1), V2(1, 1), V2(1.0f, 1.0f), 1.0f, 1.0f, false, "d1")
+  val bigBox = BoxBody( V2(100, 0), V2(1, 1), V2(1, 1), V2(10.0f, 10.0f), 1.0f, 1.0f, false, "d2")
 
   "World" should {
     "create bodies" in running(FakeApplication()) {
@@ -59,14 +59,10 @@ class WorldSpec extends Specification {
 
       world ! NewBody(box.copy(velocity = V2(0, 0), acceleration= V2(0, 0)))
       world ! NewBody(bigBox.copy(velocity = V2(0, 0), acceleration= V2(0, 0)))
-      world ! NewBody(box.copy(id="ds", static = true))
-      world ! FakeTick(10)
+      world ! FakeTick(10)//first time to init acceleration
       world ! FakeTick(10)
 
       val lst = Await.result((world ? GetBodies).mapTo[Map[String, Body]], Duration.Inf)
-
-      lst("ds").position.x mustEqual(box.position.x)
-      lst("ds").position.y mustEqual(box.position.y)
 
       lst("d1").position.y must beLessThan(box.position.y)
       lst("d2").position.y must beLessThan(bigBox.position.y)

@@ -4,7 +4,10 @@ var createBox = function(x, y) {
       position:{x:parseInt(x),y:parseInt(y)},
       velocity:{x:0.0,y:-0},
       acceleration:{x:0.0,y:0},
-      size:{x:1.0,y:1.0},
+      size:{
+        x:Math.random()*10 +1,
+        y:Math.random()*10 +1
+      },
       density:1.0,
       restitution:0.5,
       static:false,

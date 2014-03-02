@@ -15,6 +15,7 @@ case class BoxBody(
 ) extends Body(density, restitution, static, id) {
 
   override def mass = size.x * size.y * density
+  override val invMass = 1/mass
   def topRight = position + size/2
   def topLeft = position + V2(-size.x, size.y)/2
   def bottomLeft = position - size/2

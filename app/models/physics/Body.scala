@@ -14,7 +14,8 @@ abstract class Body(
   var position: V2
   var velocity: V2
   var acceleration: V2
-  def mass: Float = ???
+  def mass: Double = ???
+  val invMass: Double = 0
 }
 
 object Body {
