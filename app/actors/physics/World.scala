@@ -35,6 +35,7 @@ class World extends Actor {
           val id = genId
           n.body match {
             case bb: BoxBody => bodies(id) = bb.copy(id=id)
+            case cb: CircleBody => bodies(id) = cb.copy(id=id)
           }
         }
         case _ => bodies(n.body.id) = n.body
@@ -56,20 +57,21 @@ class World extends Actor {
     val cc = collidingObjects
     if(cc.size > 0) {
       cc.map{ e =>
-        e._2.toList.sortWith((e1, e2) => (!e1.static)).map { b =>
-          (e._1, b) match {
-            case (a:BoxBody, bb:BoxBody) => {
-              minimumTranslation(a, bb)
-                .map { r =>
-                  resolveCollision(a, bb, r)
-                }
-                //.map { r => positionalCorrection(a, b, r) }
-            }
+        e._2.toList
+          .sortWith((e1, e2) => (!e1.static))
+          .map { body =>
+            processCollision(e._1, body)
           }
-        }
       }
-
     }
+  }
+  def processCollision(a:Body, b: Body) {
+    ((a, b) match {
+      case (a:BoxBody, b:BoxBody) =>        minimumTranslation(a, b)
+      case (a:CircleBody, b:CircleBody) =>  minimumTranslation(a, b)
+      case (a:CircleBody, b:BoxBody) =>     minimumTranslation(a, b)
+      case (a:BoxBody, b:CircleBody) =>     minimumTranslation(b, a)
+    }).map { r => resolveCollision(a, b, r) }
   }
 
   def eulerIntegration(d: Double) {
@@ -118,6 +120,94 @@ class World extends Actor {
       }
     }
   }
+  def minimumTranslation(a:CircleBody, b:BoxBody): Option[V2] = {
+    val c = closestPointToRectangle(a.position, b)
+    val d = (a.position - c)
+    val dist2 = d.dot(d)
+    val dist = math.sqrt(dist2)
+    Some((d * (a.radius - dist) / dist)*V2(-1, 1))
+  }
+
+
+/*
+  def minimumTranslation(a:CircleBody, b:BoxBody): Option[V2] = {
+    println("CIRCLE && BOX")
+    val n = b.position - a.position
+    var closest = n
+    val x_extent = b.size.x
+    val y_extent = b.size.y
+
+    closest = V2(
+      clamp(-x_extent, x_extent, closest.x)
+    , clamp(-y_extent, y_extent, closest.y)
+    )
+    var inside = false
+
+    if(n == closest) {
+      inside = true
+
+      // Find closest axis
+      if(math.abs( n.x ) > math.abs( n.y ))
+      {
+        // Clamp to closest extent
+        if(closest.x > 0)
+          closest = V2(x_extent, closest.y)
+        else
+          closest = V2(-x_extent, closest.y)
+      }
+      // y axis is shorter
+      else
+      {
+        // Clamp to closest extent
+        if(closest.y > 0)
+          closest = V2(closest.x, y_extent)
+        else
+          closest = V2(closest.x, -y_extent)
+      }
+    }
+    val normal = n - closest
+    var d = normal.length
+    val r = a.radius
+
+    // Early out of the radius is shorter than distance to closest point and
+    // Circle not inside the AABB
+    if(d > r * r && !inside) {
+      None
+    } else {
+
+      // Avoided sqrt until we needed
+      d = math.sqrt( d )
+
+      // Collision normal needs to be flipped to point outside if circle was
+      // inside the AABB
+      println(n, -n, inside)
+      if(inside)
+      {
+        Some(-n)
+      }
+      else
+      {
+        Some(n)
+      }
+    }
+
+    None
+  }
+*/
+
+  def minimumTranslation(a:CircleBody, b:CircleBody): Option[V2] = {
+    println("===============", a, b)
+    val n = b.position - a.position
+    val r = math.pow(a.radius + b.radius, 2)
+    val d = n.length
+    var mtd = V2(0, 0)
+    if(d != 0) {
+      mtd = (n /d)*V2(1, -1) // normalize n (optimisation to reuse sqrt made in .length)
+    } else {
+      mtd = V2(1,0)
+    }
+    Some(mtd)
+  }
 
   def minimumTranslation(a:BoxBody, b:BoxBody): Option[V2] = {
     val amin = a.bottomLeft
@@ -164,7 +254,7 @@ class World extends Actor {
     )
   }.filterNot(e => (e._2 == Nil || e._1.static))
 
-  def collide(a: Body, b: Body) = {
+  def collide(a: Body, b: Body)  = {
     (a, b) match {
       case (a:BoxBody, b:BoxBody) => {
         !(a.topLeft.x > b.topRight.x      ||//LEFT
@@ -172,12 +262,97 @@ class World extends Actor {
           a.topRight.x < b.topLeft.x      ||//RIGHT
           a.bottomLeft.y > b.topLeft.y)     //DOWN
       }
+      case (a: CircleBody, b: CircleBody) => {
+        var r = a.radius + b.radius
+        (r*r) > (math.pow(a.position.x + b.position.x, 2) + math.pow(a.position.y + b.position.y, 2))
+      }
+      case (a: CircleBody, b:BoxBody) => AABBandCircleCollide(a, b)
+      case (a: BoxBody, b:CircleBody) => AABBandCircleCollide(b, a)
       case _ => {
         false
       }
     }
   }
 
+  //def minimumTranslation(a:CircleBody, b:BoxBody) = {
+  def AABBandCircleCollide(a: CircleBody, b: BoxBody) = {
+    val c = closestPointToRectangle(a.position, b)
+
+    // relative position of point from sphere centre
+    val d = (a.position - c)
+
+    // check if point inside sphere
+    val dist2 = d.dot(d)
+    if(dist2 >= a.radius*a.radius) false
+    else {
+      // minimum translation vector (vector of minimum intersection
+      // that we can use to push the objects apart so they stop intersecting).
+      val dist = math.sqrt(dist2)
+      if(dist < 0.0000001f) false
+      else {
+        true
+        //val mtd = d * (a.radius - dist) / dist
+      }
+    }
+
+/*
+      val circleDistance = V2(
+          math.abs(a.position.x - b.position.x)
+        , math.abs(a.position.y - b.position.y))
+
+      if (circleDistance.x > (b.size.x/2 + a.radius)) false
+      else if (circleDistance.y > (b.size.y/2 + a.radius)) false
+      else if (circleDistance.x <= (b.size.x/2)) true
+      else if (circleDistance.y <= (b.size.y/2)) true
+      else {
+        val cornerDistance_sq = math.pow(circleDistance.x - b.size.x/2, 2) + math.pow(circleDistance.y - b.size.y/2, 2)
+
+        (cornerDistance_sq <= math.pow(a.radius, 2))
+       }
+*/
+  }
+
+  def closestPointToRectangle(v: V2, b: BoxBody) = {
+      // relative position of p from the point 'p'
+      var d = (v - b.position)
+
+      // rectangle half-size
+      val h = b.size/2
+
+      // special case when the sphere centre is inside the rectangle
+      if(math.abs(d.x) < h.x && math.abs(d.y) < h.y)
+      {
+          // use left or right side of the rectangle boundary
+          // as it is the closest
+          if((h.x - math.abs(d.x)) < (h.y - math.abs(d.y)))
+          {
+               d = V2(h.x * math.signum(d.x), 0.0f)
+          }
+          // use top or bottom side of the rectangle boundary
+          // as it is the closest
+          else
+          {
+               d = V2(0.0f, h.y * math.signum(d.y))
+          }
+      }
+      else
+      {
+          // clamp to rectangle boundary
+          if(math.abs(d.x) > h.x) d = d.copy(x = h.x * math.signum(d.x))
+          if(math.abs(d.y) > h.y) d = d.copy(y = h.y * math.signum(d.y))
+      }
+
+      // the closest point on rectangle from p
+      b.position + d
+  }
+
+
   def genId = scala.util.Random.nextInt(10000).toString
+
+  def clamp(min: Double, max: Double, v: Double) =
+    if (v < min) min
+    else if (v > max) max
+    else v
+
 }
 

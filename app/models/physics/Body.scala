@@ -16,6 +16,7 @@ abstract class Body(
   var acceleration: V2
   def mass: Double = ???
   val invMass: Double = 0
+  val shape: String = ""
 }
 
 object Body {
@@ -23,6 +24,7 @@ object Body {
   implicit val bodyWriter = Writes[Body] { b =>
     b match {
       case box: BoxBody => Json.toJson(box)
+      case circle: CircleBody => Json.toJson(circle)
     }
   }
 }

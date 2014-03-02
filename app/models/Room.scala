@@ -35,7 +35,11 @@ object Room {
 
         println(s"incoming connection")
         val iteratee = Iteratee.foreach[JsValue] { event =>
-          viewer ! Command((event \ "body").as[BoxBody])
+          //println(event, (event \ "body" \ "shape").as[String])
+          viewer ! Command((event \ "body" \ "shape").as[String] match {
+            case "box" => (event \ "body").as[BoxBody]
+            case "circle" => (event \ "body").as[CircleBody]
+          })
         }.map { _ =>
           viewer ! Quit()
         }
