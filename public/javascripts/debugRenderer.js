@@ -17,15 +17,15 @@ var serverTick = function(msg) {
 
     if(body.shape == "box") {
       body.debugShape = new Phaser.Rectangle(
-          (b.position.x-b.size.x/2)*METER_TO_PIXEL
-        , (-b.position.y-b.size.y/2)*METER_TO_PIXEL
+          (b.position.x-b.size.x/2)*METER_TO_PIXEL+400
+        , (-b.position.y-b.size.y/2)*METER_TO_PIXEL+300
         , b.size.x*METER_TO_PIXEL
         , b.size.y*METER_TO_PIXEL
       )
     } else if(body.shape = "circle") {
       body.debugShape = new Phaser.Circle(
-          (b.position.x)*METER_TO_PIXEL
-        , (-b.position.y)*METER_TO_PIXEL
+          (b.position.x)*METER_TO_PIXEL+400
+        , (-b.position.y)*METER_TO_PIXEL+300
         , 2*b.radius*METER_TO_PIXEL
       )
     }
@@ -46,17 +46,17 @@ $(function () {
   game = new Phaser.Game(800, 600, Phaser.CANVAS, '', { preload: preload, create: create, update: update, render: render });
   setTimeout( function() {
     $("canvas").click(function(e) {
-      createRandomBody(e.offsetX/METER_TO_PIXEL, -e.offsetY/METER_TO_PIXEL)
+      createRandomBody((e.offsetX-400)/METER_TO_PIXEL, (300-e.offsetY)/METER_TO_PIXEL)
     })
 
     createBody(
-        {x: 100/METER_TO_PIXEL, y: -300/METER_TO_PIXEL }
+        {x: 100/METER_TO_PIXEL, y: -100/METER_TO_PIXEL }
       , 10
       , true
       , "circle"
     )
     createBody(
-        {x: 200/METER_TO_PIXEL, y: -600/METER_TO_PIXEL }
+        {x: 200/METER_TO_PIXEL, y: -300/METER_TO_PIXEL }
       , {x: 100, y: 10 }
       , true
       , "box"

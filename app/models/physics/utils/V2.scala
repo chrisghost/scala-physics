@@ -13,8 +13,9 @@ case class V2(x: Double, y: Double) {
   def divides(a: Double) = V2(a/x, a/y)
   def dot(v: V2) = x*v.x+y*v.y
   def length = math.sqrt(x*x + y*y)
-  def dst(v: V2) = math.sqrt(math.pow(x+v.x, 2) + math.pow(y+v.y, 2))
+  def dst(v: V2) = math.sqrt(math.pow(x-v.x, 2) + math.pow(y-v.y, 2))
   def norm = this/length
+  def inverse = V2(y, x)
 }
 
 object V2 {

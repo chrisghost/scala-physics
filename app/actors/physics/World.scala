@@ -69,8 +69,8 @@ class World extends Actor {
     ((a, b) match {
       case (a:BoxBody, b:BoxBody) =>        minimumTranslation(a, b)
       case (a:CircleBody, b:CircleBody) =>  minimumTranslation(a, b)
-      case (a:CircleBody, b:BoxBody) =>     minimumTranslation(a, b)
-      case (a:BoxBody, b:CircleBody) =>     minimumTranslation(b, a)
+      case (a:CircleBody, b:BoxBody) =>     minimumTranslation(a, b).map(_*V2(-1, 1))
+      case (a:BoxBody, b:CircleBody) =>     minimumTranslation(b, a).map(_*V2(-1, -1))//.map(_.inverse)
     }).map { r => resolveCollision(a, b, r) }
   }
 
@@ -120,12 +120,13 @@ class World extends Actor {
       }
     }
   }
+
   def minimumTranslation(a:CircleBody, b:BoxBody): Option[V2] = {
     val c = closestPointToRectangle(a.position, b)
     val d = (a.position - c)
     val dist2 = d.dot(d)
     val dist = math.sqrt(dist2)
-    Some((d * (a.radius - dist) / dist)*V2(-1, 1))
+    Some((d * (a.radius - dist) / dist))
   }
 
 
@@ -196,15 +197,15 @@ class World extends Actor {
 */
 
   def minimumTranslation(a:CircleBody, b:CircleBody): Option[V2] = {
-    println("===============", a, b)
+    //println("===============", a, b)
     val n = b.position - a.position
     val r = math.pow(a.radius + b.radius, 2)
     val d = n.length
     var mtd = V2(0, 0)
     if(d != 0) {
-      mtd = (n /d)*V2(1, -1) // normalize n (optimisation to reuse sqrt made in .length)
+      mtd = (n /d)*V2(-1, -1) // normalize n (optimisation to reuse sqrt made in .length)
     } else {
-      mtd = V2(1,0)
+      mtd = V2(1,1).norm
     }
     Some(mtd)
   }
@@ -264,7 +265,8 @@ class World extends Actor {
       }
       case (a: CircleBody, b: CircleBody) => {
         var r = a.radius + b.radius
-        (r*r) > (math.pow(a.position.x + b.position.x, 2) + math.pow(a.position.y + b.position.y, 2))
+        r > a.position.dst(b.position)
+        //(math.pow(a.position.x + b.position.x, 2) + math.pow(a.position.y + b.position.y, 2))
       }
       case (a: CircleBody, b:BoxBody) => AABBandCircleCollide(a, b)
       case (a: BoxBody, b:CircleBody) => AABBandCircleCollide(b, a)
@@ -274,7 +276,6 @@ class World extends Actor {
     }
   }
 
-  //def minimumTranslation(a:CircleBody, b:BoxBody) = {
   def AABBandCircleCollide(a: CircleBody, b: BoxBody) = {
     val c = closestPointToRectangle(a.position, b)
 
