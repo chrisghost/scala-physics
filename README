@@ -1,4 +1,7 @@
-This is your new Play application
-=====================================
+Physics engine in scala
 
-This file will be packaged with your application, when using `play dist`.
+Howto : `sbt` then `run`
+
+Go to localhost:9000/
+
+![travis build status](https://api.travis-ci.org/chrisghost/scala-physics.png "Build status on travis-ci")
