@@ -51,13 +51,25 @@ $(function () {
 
     createBody(
         {x: 100/METER_TO_PIXEL, y: -100/METER_TO_PIXEL }
-      , 10
+      , 5
       , true
       , "circle"
     )
     createBody(
-        {x: 200/METER_TO_PIXEL, y: -300/METER_TO_PIXEL }
+        {x: 100/METER_TO_PIXEL, y: -300/METER_TO_PIXEL }
       , {x: 100, y: 10 }
+      , true
+      , "box"
+    )
+    createBody(
+        {x: -350/METER_TO_PIXEL, y: -100/METER_TO_PIXEL }
+      , {x: 10, y: 30 }
+      , true
+      , "box"
+    )
+    createBody(
+        {x: +350/METER_TO_PIXEL, y: -100/METER_TO_PIXEL }
+      , {x: 10, y: 30 }
       , true
       , "box"
     )

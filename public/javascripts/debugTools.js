@@ -13,12 +13,12 @@ var createRandomBody = function(x, y) {
   if(Math.random() > 0.5) {
     obj.body.shape = "box"
     obj.body.size = {
-      x:Math.floor(Math.random()*10 +1),
-      y:Math.floor(Math.random()*10 +1)
+      x:Math.floor(Math.random()*5 +3),
+      y:Math.floor(Math.random()*5 +3)
     }
   } else {
     obj.body.shape = "circle"
-    obj.body.radius = Math.floor(Math.random()*10 + 1)
+    obj.body.radius = Math.floor(Math.random()*5 + 3)
   }
   console.log(obj)
   socket.send(JSON.stringify(obj))

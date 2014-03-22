@@ -22,12 +22,12 @@ case class Quit()
 
 object Room {
 
-  val world = Akka.system.actorOf(Props[World])
+  val world = Akka.system.actorOf(Props[WorldProcessor])
   val viewer = Akka.system.actorOf(Props(new Viewer(world)))
   implicit val timeout = Timeout(1 second)
 
-  val viewTick = Akka.system.scheduler.schedule( 0 milliseconds, 32 milliseconds, viewer, Tick)
-  val worldTick = Akka.system.scheduler.schedule( 0 milliseconds, 16 milliseconds, world, Tick)
+  val viewTick = Akka.system.scheduler.schedule( 0 milliseconds, 16 milliseconds, viewer, Tick)
+  val worldTick = Akka.system.scheduler.schedule( 0 milliseconds, 5 milliseconds, world, Tick)
 
   def join : scala.concurrent.Future[(Iteratee[JsValue,_],Enumerator[JsValue])] = {
     (viewer ? Join()).map {
