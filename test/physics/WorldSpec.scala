@@ -29,7 +29,7 @@ class WorldSpec extends Specification {
 
   "World" should {
     "create bodies" in running(FakeApplication()) {
-      val world = Akka.system.actorOf(Props[World])
+      val world = Akka.system.actorOf(Props[WorldProcessor])
 
       world ! NewBody(box)
 
@@ -39,7 +39,7 @@ class WorldSpec extends Specification {
     }
     "update dynamic bodies positions" in running(FakeApplication()) {
       implicit val ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext
-      val world = Akka.system.actorOf(Props[World])
+      val world = Akka.system.actorOf(Props[WorldProcessor])
 
       world ! NewBody(box.copy(velocity = V2(100, 100)))
       world ! NewBody(box.copy(id="ds", static = true))
@@ -55,7 +55,7 @@ class WorldSpec extends Specification {
     }
     "fall down because of gravity" in running(FakeApplication()) {
       implicit val ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext
-      val world = Akka.system.actorOf(Props[World])
+      val world = Akka.system.actorOf(Props[WorldProcessor])
 
       world ! NewBody(box.copy(velocity = V2(0, 0), acceleration= V2(0, 0)))
       world ! NewBody(bigBox.copy(velocity = V2(0, 0), acceleration= V2(0, 0)))
