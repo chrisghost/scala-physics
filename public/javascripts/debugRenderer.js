@@ -42,36 +42,39 @@ var render = function() {
   }
 }
 
+function initGround() {
+  createBody(
+    {x: 100/METER_TO_PIXEL, y: -100/METER_TO_PIXEL }
+    , 5
+    , true
+    , "circle"
+  )
+  createBody(
+    {x: 100/METER_TO_PIXEL, y: -300/METER_TO_PIXEL }
+    , {x: 100, y: 10 }
+    , true
+    , "box"
+  )
+  createBody(
+    {x: -350/METER_TO_PIXEL, y: -100/METER_TO_PIXEL }
+    , {x: 10, y: 30 }
+    , true
+    , "box"
+  )
+  createBody(
+    {x: +350/METER_TO_PIXEL, y: -100/METER_TO_PIXEL }
+    , {x: 10, y: 30 }
+    , true
+    , "box"
+  )
+
+  }
+
 $(function () {
   game = new Phaser.Game(800, 600, Phaser.CANVAS, '', { preload: preload, create: create, update: update, render: render });
   setTimeout( function() {
     $("canvas").click(function(e) {
-      createRandomBody((e.offsetX-400)/METER_TO_PIXEL, (300-e.offsetY)/METER_TO_PIXEL)
+      createRandomBody((e.clientX-400)/METER_TO_PIXEL, (300-e.clientY)/METER_TO_PIXEL)
     })
-
-    createBody(
-        {x: 100/METER_TO_PIXEL, y: -100/METER_TO_PIXEL }
-      , 5
-      , true
-      , "circle"
-    )
-    createBody(
-        {x: 100/METER_TO_PIXEL, y: -300/METER_TO_PIXEL }
-      , {x: 100, y: 10 }
-      , true
-      , "box"
-    )
-    createBody(
-        {x: -350/METER_TO_PIXEL, y: -100/METER_TO_PIXEL }
-      , {x: 10, y: 30 }
-      , true
-      , "box"
-    )
-    createBody(
-        {x: +350/METER_TO_PIXEL, y: -100/METER_TO_PIXEL }
-      , {x: 10, y: 30 }
-      , true
-      , "box"
-    )
   }, 100)
 })

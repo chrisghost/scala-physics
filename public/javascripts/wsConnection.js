@@ -4,5 +4,6 @@ $(function() {
     window.socket = new WS(wsUrl)
 
     window.socket.onmessage = serverTick
+    window.socket.onopen = initGround
 
 })
