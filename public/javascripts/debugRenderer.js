@@ -5,29 +5,35 @@ var bodies = {}
 var preload = function() {}
 var create = function() {}
 var serverTick = function(msg) {
-  //console.log(msg.data, bodies)
   var data = JSON.parse(msg.data)
-  for(i in data) {
-    var b = data[i]
-    if(typeof bodies[i] == 'undefined') {
-      bodies[i] = b
+  if(typeof data.kind != 'undefined') {
+    if(data.kind == "delete") {
+      delete bodies[data.id]
     }
-    var body = bodies[i]
-    //console.log(body.shape)
+  } else {
+    //console.log(msg.data, bodies)
+    for(i in data) {
+      var b = data[i]
+      if(typeof bodies[i] == 'undefined') {
+        bodies[i] = b
+      }
+      var body = bodies[i]
+      //console.log(body.shape)
 
-    if(body.shape == "box") {
-      body.debugShape = new Phaser.Rectangle(
-          (b.position.x-b.size.x/2)*METER_TO_PIXEL+400
-        , (-b.position.y-b.size.y/2)*METER_TO_PIXEL+300
-        , b.size.x*METER_TO_PIXEL
-        , b.size.y*METER_TO_PIXEL
-      )
-    } else if(body.shape = "circle") {
-      body.debugShape = new Phaser.Circle(
-          (b.position.x)*METER_TO_PIXEL+400
-        , (-b.position.y)*METER_TO_PIXEL+300
-        , 2*b.radius*METER_TO_PIXEL
-      )
+      if(body.shape == "box") {
+        body.debugShape = new Phaser.Rectangle(
+            (b.position.x-b.size.x/2)*METER_TO_PIXEL+400
+          , (-b.position.y-b.size.y/2)*METER_TO_PIXEL+300
+          , b.size.x*METER_TO_PIXEL
+          , b.size.y*METER_TO_PIXEL
+        )
+      } else if(body.shape = "circle") {
+        body.debugShape = new Phaser.Circle(
+            (b.position.x)*METER_TO_PIXEL+400
+          , (-b.position.y)*METER_TO_PIXEL+300
+          , 2*b.radius*METER_TO_PIXEL
+        )
+      }
     }
   }
 }
@@ -76,5 +82,7 @@ $(function () {
     $("canvas").click(function(e) {
       createRandomBody((e.clientX-400)/METER_TO_PIXEL, (300-e.clientY)/METER_TO_PIXEL)
     })
+
+    $("#clear").click(cleanBodies)
   }, 100)
 })

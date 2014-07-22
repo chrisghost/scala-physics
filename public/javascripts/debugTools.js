@@ -1,6 +1,7 @@
 var createRandomBody = function(x, y) {
-  var obj = { body:
-    {
+  var obj = {
+    kind: "create",
+    body: {
       position:{x:parseInt(x),y:parseInt(y)},
       velocity:{x:0.0,y:-0},
       acceleration:{x:0.0,y:0},
@@ -24,7 +25,7 @@ var createRandomBody = function(x, y) {
   socket.send(JSON.stringify(obj))
 }
 var createBody = function(pos, size, static, shape) {
-    var obj = { body:
+    var obj = { kind: "create", body:
     {
       position: pos,
       velocity:{x:0.0,y:-0},
@@ -42,4 +43,8 @@ var createBody = function(pos, size, static, shape) {
     obj.body.radius = size
   }
   socket.send(JSON.stringify(obj))
+}
+
+var cleanBodies = function() {
+  socket.send(JSON.stringify({ kind: "clean" }))
 }

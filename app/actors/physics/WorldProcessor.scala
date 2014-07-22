@@ -9,6 +9,7 @@ import models.physics.collision._
 import models.physics.utils._
 
 case class NewBody(body: Body)
+case object CleanActiveBodies
 case object GetBodies
 case class FakeTick(d: Long)
 case class Tick()
@@ -40,6 +41,11 @@ class WorldProcessor extends Actor {
         }
         case _ => bodies(n.body.id) = n.body
       }
+    }
+    case CleanActiveBodies => {
+      val toDel = bodies.filterNot(_._2.static).keys
+      bodies.retain((k, e) => e.static)
+      sender ! toDel.toList
     }
     case GetBodies => {
       //println(bodies.values)

@@ -20,7 +20,12 @@ abstract class Body(
 }
 
 object Body {
-
+  implicit val bodyReader = Reads[Body] { js =>
+    (js \ "shape").as[String] match {
+      case "box" => BoxBody.boxBodyReads.reads(js)
+      case "circle" => CircleBody.circleBodyReads.reads(js)
+    }
+  }
   implicit val bodyWriter = Writes[Body] { b =>
     b match {
       case box: BoxBody => Json.toJson(box)

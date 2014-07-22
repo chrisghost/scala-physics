@@ -17,10 +17,11 @@ import play.api.libs.concurrent.Execution.Implicits._
 import actors._
 import actors.physics._
 import models.physics._
+import utilities.Logger
 
 case class Quit()
 
-object Room {
+object Room extends Logger {
 
   val world = Akka.system.actorOf(Props[WorldProcessor])
   val viewer = Akka.system.actorOf(Props(new Viewer(world)))
@@ -33,13 +34,11 @@ object Room {
     (viewer ? Join()).map {
       case Connected(enumerator) => {
 
-        println(s"incoming connection")
+        LOGGER.info(s"incoming connection")
         val iteratee = Iteratee.foreach[JsValue] { event =>
-          //println(event, (event \ "body" \ "shape").as[String])
-          viewer ! Command((event \ "body" \ "shape").as[String] match {
-            case "box" => (event \ "body").as[BoxBody]
-            case "circle" => (event \ "body").as[CircleBody]
-          })
+          Command.commandFormat.reads(event).map { cm =>
+            viewer ! cm
+          }
         }.map { _ =>
           viewer ! Quit()
         }
